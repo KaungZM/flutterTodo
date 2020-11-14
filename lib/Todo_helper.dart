@@ -28,17 +28,32 @@ class TodoHelper {
 
   _onCreate(Database db, int version) {
     return db.execute(
-        'CREATE TABLE $table(id INTEGER PRIMARY KEY, task TEXT, done INTEGER)');
+        'CREATE TABLE $table(id INTEGER PRIMARY KEY AUTOINCREMENT, task TEXT, done INTEGER)');
   }
 
   Future<void> insertTodo(Todo todo) async {
-    final Database db = await database;
+    final Database db = await todoHelper.database;
     await db.insert(table, todo.toMap());
   }
 
+  Future<void> updateTodo(Todo todo) async {
+    final Database db = await todoHelper.database;
+    await db.update(table, todo.toMap(), where: 'id = ?', whereArgs: [todo.id]);
+  }
+
   Future<List<Map<String, dynamic>>> retrieveData() async {
-    final Database db = await database;
+    final Database db = await todoHelper.database;
     print(await db.query(table));
     return await db.query(table);
+  }
+
+  Future<void> deleteTodo(int id) async {
+    final Database db = await todoHelper.database;
+    await db.delete(table, where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> clearData() async {
+    final Database db = await todoHelper.database;
+    await db.rawQuery("Delete from $table");
   }
 }

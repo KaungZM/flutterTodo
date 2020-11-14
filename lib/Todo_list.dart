@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter_todo/main.dart';
+import 'Todo_helper.dart';
 import 'Todo.dart';
 
 class TodoList extends StatefulWidget {
@@ -43,15 +44,20 @@ class _TodoListState extends State<TodoList> {
   setDone(int position) {
     setState(() {
       this.list[position].done = !this.list[position].done;
+      TodoHelper.todoHelper.updateTodo(this.list[position]);
     });
+    print(TodoHelper.todoHelper.retrieveData());
   }
 
   delete(int position) {
     setState(() {
+      TodoHelper.todoHelper.deleteTodo(this.list[position].id);
       this.list.removeAt(position);
+      MyHomePage();
       if (this.list.length == 0) {
         _TodoListState(this.list);
       }
     });
+    print(TodoHelper.todoHelper.retrieveData());
   }
 }

@@ -31,13 +31,29 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<Todo> list;
+  List<Todo> list = List()..add(Todo(0, "default", false));
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+        actions: [
+          Visibility(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(15, 15, 5, 15),
+              child: RaisedButton(
+                color: Colors.lightBlueAccent,
+                child: Text(
+                  'Clear All',
+                  style: TextStyle(color: Colors.white, fontSize: 20),
+                ),
+                onPressed: clear,
+              ),
+            ),
+            visible: (list.length > 3) ? true : false,
+          )
+        ],
       ),
       body: Container(
         child: (list == null) ? Center(child: Text("Add new")) : TodoList(list),
@@ -52,15 +68,15 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    TodoHelper.todoHelper
-        .retrieveData()
-        .then((value) => value.forEach((element) {
-              setState(() {
-                list = List()
-                  ..add(Todo(element['id'], element['task'],
-                      (element['done'] == 1) ? true : false));
-              });
-            }));
+    this.list.clear();
+    TodoHelper.todoHelper.retrieveData().then((value) {
+      setState(() {
+        value.forEach((element) {
+          list.add(Todo(element['id'], element['task'],
+              (element['done'] == 1) ? true : false));
+        });
+      });
+    });
   }
 
   var textController = TextEditingController();
@@ -82,23 +98,21 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void addTodo() {
-    if (list == null) {
-      Todo todo = Todo(1, textController.text, false);
-      list = List()..add(todo);
+    setState(() {
+      Todo todo = Todo(list.length + 1, textController.text, false);
+      this.list.add(todo);
       TodoHelper.todoHelper.insertTodo(todo);
-      setState(() {
-        _MyHomePageState();
-        textController.clear();
-        Navigator.of(context).pop();
-      });
-    } else {
-      setState(() {
-        Todo todo = Todo(list.length++, textController.text, false);
-        this.list.add(todo);
-        TodoHelper.todoHelper.insertTodo(todo);
-        textController.clear();
-        Navigator.of(context).pop();
-      });
-    }
+      textController.clear();
+      Navigator.of(context).pop();
+    });
+    print(TodoHelper.todoHelper.retrieveData());
+  }
+
+  void clear() {
+    TodoHelper.todoHelper.clearData();
+    setState(() {
+      this.list.clear();
+    });
+    print(TodoHelper.todoHelper.retrieveData());
   }
 }
